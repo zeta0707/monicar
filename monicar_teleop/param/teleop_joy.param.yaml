@@ -1,0 +1,5 @@
+teleop_joy_node:
+  ros__parameters:
+    max_fwd_m_s: 1.0
+    max_rev_m_s: 1.0
+    max_deg_s: 1.0
