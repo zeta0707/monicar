@@ -32,7 +32,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# Author: Bishop Pearson
+# Author: ChangWhan Lee
 
 import os
 import select
@@ -48,9 +48,9 @@ else:
     import termios
     import tty
 
-MONICAR_MAX_LIN_VEL = 1.00
-MONICAR_MAX_ANG_VEL = 1.00
-
+# 
+MAX_LIN_VEL = 1.00
+MAX_ANG_VEL = 1.00
 LIN_VEL_STEP_SIZE = 0.1
 ANG_VEL_STEP_SIZE = 0.1
 
@@ -118,11 +118,11 @@ def constrain(input_vel, low_bound, high_bound):
 
 
 def check_linear_limit_velocity(velocity):
-    return constrain(velocity, -MONICAR_MAX_LIN_VEL, MONICAR_MAX_LIN_VEL)
+    return constrain(velocity, -MAX_LIN_VEL, MAX_LIN_VEL)
 
 
 def check_angular_limit_velocity(velocity):
-    return constrain(velocity, -MONICAR_MAX_ANG_VEL, MONICAR_MAX_ANG_VEL)
+    return constrain(velocity, -MAX_ANG_VEL, MAX_ANG_VEL)
 
 
 def main():

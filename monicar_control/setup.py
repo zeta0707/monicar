@@ -20,10 +20,10 @@ setup(
         'setuptools',
     ],
     zip_safe=True,
-    author='Bishop Pearson',
-    author_email='bishopearson@gmail.com',
-    maintainer='Bishop Pearson',
-    maintainer_email='bishopearson@gmail.com',
+    author='ChangWhan Lee',
+    author_email='zeta0707@gmail.com',
+    maintainer='ChangWhan Lee',
+    maintainer_email='zeta0707@gmail.com',
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',
@@ -38,10 +38,10 @@ setup(
     entry_points={
         'console_scripts': [
             'blob_chase = monicar_control.blob_chase:main',
-            'chase_gotstop_yolo = monicar_control.chase_gotstop_yolo:main', 
             'chase_the_ball = monicar_control.chase_the_ball:main', 
             'joy_control = monicar_control.joy_control:main',
             'motor_control = monicar_control.motor_control:main',
+            'chase_gotstop_yolo = monicar_control.chase_gotstop_yolo:main', 
         ],
     },
 )

@@ -30,8 +30,8 @@ class VehicleNode(Node):
                 ('steer_limit', None),
                 ('speed_center', None),
                 ('speed_limit', None),
-                ('i2caddr0', None),
-                ('i2caddr1', None),
+                ('i2cSteer', None),
+                ('i2cThrottle', None),
            ])        
         self.get_logger().info("Setting Up the Node...")
 
@@ -44,27 +44,27 @@ class VehicleNode(Node):
         self.SPEED_CENTER = self.get_parameter_or('speed_center').get_parameter_value().integer_value 
         self.SPEED_LIMIT = self.get_parameter_or('speed_limit').get_parameter_value().integer_value
 
-        self.i2caddr0 = self.get_parameter_or('i2caddr0', Parameter('i2caddr0', Parameter.Type.INTEGER, 64)).get_parameter_value().integer_value
-        self.i2caddr1 = self.get_parameter_or('i2caddr1', Parameter('i2caddr1', Parameter.Type.INTEGER, 96)).get_parameter_value().integer_value
+        self.i2cSteer = self.get_parameter_or('i2cSteer').get_parameter_value().integer_value
+        self.i2cThrottle = self.get_parameter_or('i2cThrottle').get_parameter_value().integer_value
 
-        print('hasSteer: %s, i2caddr0: %s, i2caddr1: %s'%
+        print('hasSteer: %s, i2cSteer: %s, i2cThrottle: %s'%
             (self.hasSteer,
-            self.i2caddr0,
-            self.i2caddr1)
+            self.i2cSteer,
+            self.i2cThrottle)
         )
 
         #RCcar which has steering
         if self.hasSteer == 1:
             #Steer with DC motor driver 
             if self.isDCSteer == 1:
-                steer_controller = PCA9685(channel=0, address=self.i2caddr0, busnum=1)
+                steer_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
                 self._steering = PWMSteering(controller=steer_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             #Steer with servo motor
             else:
-                self._steering = PCA9685(channel=0, address=self.i2caddr0, busnum=1)
+                self._steering = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
             self.get_logger().info("Steering Controller Awaked!!") 
             
-            throttle_controller = PCA9685(channel=0, address=self.i2caddr1, busnum=1)
+            throttle_controller = PCA9685(channel=0, address=self.i2cThrottle, busnum=1)
             if self.isDCSteer == 1:
                 #Throttle with Motorhat
                 self._throttle = PWMThrottleHat(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)             
@@ -75,17 +75,16 @@ class VehicleNode(Node):
             
         #2wheel RCcar
         else:
-            throttle_controller = PCA9685(channel=0, address=self.i2caddr0, busnum=1)
+            throttle_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
             self._throttle = PWMThrottle2Wheel(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             self.get_logger().info("2wheel Throttle Controller Awaked!!")         
 
-        self._teleop_sub = self.create_subscription(Twist, 'cmd_vel', self.cb_keyboard, 10)       
+        self._teleop_sub = self.create_subscription(Twist, 'cmd_vel', self.cb_teleop, 10)       
+        self.get_logger().info("Keyboard Subscriber Awaked!! Waiting for keyboard/joystick...")
 
-        self.get_logger().info("Keyboard Subscriber Awaked!! Waiting for keyboard...")
+    def cb_teleop(self, msg):
 
-    def cb_keyboard(self, msg):
-
-        self.get_logger().info("Received a /cmd_vel message!")
+        #self.get_logger().info("Received a /cmd_vel message!")
         self.get_logger().info("Components: [%0.2f, %0.2f]"%(msg.linear.x, msg.angular.z))
 
         # Do velocity processing here:

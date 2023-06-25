@@ -14,6 +14,9 @@ Publishes commands to
 """
 import math, time
 import rclpy
+from rclpy.node import Node
+from rclpy.parameter import Parameter
+from rclpy.logging import get_logger
 from geometry_msgs.msg import Twist, Point
 
 def saturate(value, min, max):
@@ -25,23 +28,45 @@ def saturate(value, min, max):
         return value
 
 
-class ChaseBall:
+class ChaseBall(Node):
     def __init__(self):
+
+        super().__init__('chase_ball_node')
+
+        self.declare_parameters(
+            namespace='',
+            parameters=[
+                ('k_steer', None),
+                ('k_throttle', None),
+           ])  
+        self.get_logger().info("Setting Up the Node...")
+
+        self.K_LAT_DIST_TO_STEER = self.get_parameter_or('k_steer').get_parameter_value().double_value
+        self.K_LAT_DIST_TO_THROTTLE = self.get_parameter_or('k_throttle').get_parameter_value().double_value  
+
+        print('k_steer: %s, k_throttle: %s' %
+            (self.K_LAT_DIST_TO_STEER,
+            self.K_LAT_DIST_TO_THROTTLE)
+        )
 
         self.blob_x = 0.0
         self.blob_y = 0.0
         self._time_detected = 0.0
 
-        self.sub_center = rclpy.Subscriber("/blob/point_blob", Point, self.update_ball)
-        rclpy.loginfo("Subscribers set")
+        self.sub_center = self.create_subscription(Point, "/blob/point_blob", self.update_ball, 10)  
+        self.get_logger().info("Subscriber set")
 
-        self.pub_twist = rclpy.Publisher("/dkcar/control/cmd_vel", Twist, queue_size=5)
-        rclpy.loginfo("Publisher set")
+        self.pub_twist = self.create_publisher(Twist, "/dkcar/control/cmd_vel", 10)
+        self.get_logger().info("Publisher set")
 
         self._message = Twist()
 
         self._time_steer = 0
         self._steer_sign_prev = 0
+
+        # Create a timer that will gate the node actions twice a second
+        timer_period = 0.1  # seconds
+        self.timer = self.create_timer(timer_period, self.node_callback)
 
     @property
     def is_detected(self):
@@ -51,7 +76,7 @@ class ChaseBall:
         self.blob_x = message.x
         self.blob_y = message.y
         self._time_detected = time.time()
-        # rclpy.loginfo("Ball detected: %.1f  %.1f "%(self.blob_x, self.blob_y))
+        print("Ball detected: %.1f  %.1f "%(self.blob_x, self.blob_y))
 
     def get_control_action(self):
         """
@@ -65,43 +90,37 @@ class ChaseBall:
 
         if self.is_detected:
             # --- Apply steering, proportional to how close is the object
-            steer_action = K_LAT_DIST_TO_STEER * self.blob_x
+            steer_action = self.K_LAT_DIST_TO_STEER * self.blob_x
             steer_action = saturate(steer_action, -1.5, 1.5)
-            rclpy.loginfo("BlobX %.2f" % self.blob_x)
+            print("BlobX %.2f" % self.blob_x)
             
             #if object is detected, go forward with defined power
-            throttle_action = K_LAT_DIST_TO_THROTTLE
-            rclpy.loginfo("is_detected, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
+            throttle_action = self.K_LAT_DIST_TO_THROTTLE
+            print("is_detected, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
 
         return (steer_action, throttle_action)
 
-    def run(self):
+    def node_callback(self):
 
-        # --- Set the control rate
-        rate = rclpy.Rate(5)
+        # -- Get the control action
+        steer_action, throttle_action = self.get_control_action()
+        #print("Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
 
-        while not rclpy.is_shutdown():
-            # -- Get the control action
-            steer_action, throttle_action = self.get_control_action()
+        # -- update the message
+        self._message.linear.x = throttle_action
+        self._message.angular.z = steer_action
 
-            #rclpy.loginfo("Steering = %.2f, Throttle = %.2f", steer_action, throttle_action)
+        # -- publish it
+        self.pub_twist.publish(self._message)
 
-            # -- update the message
-            self._message.linear.x = throttle_action
-            self._message.angular.z = steer_action
 
-            # -- publish it
-            self.pub_twist.publish(self._message)
+def main(args=None):
+    rclpy.init(args=args) 
+    chase_ball = ChaseBall()
+    rclpy.spin(chase_ball) 
 
-            rate.sleep()
-
+    chase_ball.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == "__main__":
-
-    rclpy.init_node("chase_ball")
-
-    K_LAT_DIST_TO_STEER = rclpy.get_param("/k_steer") 
-    K_LAT_DIST_TO_THROTTLE = rclpy.get_param("/k_throttle")
-
-    chase_ball = ChaseBall()
-    chase_ball.run()
+    main()

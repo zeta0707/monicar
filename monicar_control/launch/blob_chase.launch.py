@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-
-# Author: Bishop Pearson
-
 import os
 
 from ament_index_python.packages import get_package_share_directory
@@ -10,32 +7,25 @@ from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch.substitutions import ThisLaunchFileDir
+from launch.substitutions import TextSubstitution
 from launch_ros.actions import Node
 
-
 def generate_launch_description():
-  motor_parameter = LaunchConfiguration(
-    'motor_parameter',
+  blobchase_parameter = LaunchConfiguration(
+    'blobchase_parameter',
     default=os.path.join(
       get_package_share_directory('monicar_control'),
-      'param/motor.yaml'
+      'param/motor.4blob.yaml'
     )
   )
 
   return LaunchDescription([
-    DeclareLaunchArgument(
-      'keyboard_control',
-      default_value=motor_parameter
-    ),
+    DeclareLaunchArgument('blobchase_parameter', default_value=blobchase_parameter),
 
     Node(
-      package='monicar_control',
-      executable='keyboard_control',
-      name='keyboard_control',
-      output='screen',
-      emulate_tty=True,
-      parameters=[motor_parameter],
-      namespace='',
-    )
+      package='monicar_control', executable='blob_chase', name='blob_chase_node', 
+	    output='screen', emulate_tty=True,
+      parameters=[blobchase_parameter],
+    ),
+    
   ])

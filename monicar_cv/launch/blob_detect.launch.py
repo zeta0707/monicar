@@ -10,23 +10,18 @@ from launch.substitutions import LaunchConfiguration
 from launch.substitutions import TextSubstitution
 from launch_ros.actions import Node
 
-
 def generate_launch_description():
   motor_parameter = LaunchConfiguration(
-    'motor_parameter',
+    'blob_parameter',
     default=os.path.join(
-      get_package_share_directory('monicar_control'),
-      'param/motor.yaml'
+      get_package_share_directory('monicar_cv'),
+      'param/find_ball.yaml'
     )
   )
-
   return LaunchDescription([
-    DeclareLaunchArgument('motor_parameter', default_value=motor_parameter),
-
     Node(
-      package='monicar_control', executable='motor_control', name='motor_control_node', 
-	    output='screen', emulate_tty=True,
-      parameters=[motor_parameter],
+      package='monicar_cv', executable='find_ball', name='blob_detect_node',
+      output='screen', emulate_tty=True,
     ),
     
   ])

@@ -7,7 +7,7 @@ motor_control_node:
     speed_limit: 4096
     has_steer : 1
     isDCSteer : 0
-    i2caddr0: 64
-    i2caddr1: 96
+    i2cSteer: 64
+    i2cThrottle: 96
     k_steer: 2.5
     k_throttle: 0.2

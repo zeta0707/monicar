@@ -11,6 +11,7 @@ define: &orange_max [76, 218, 234]
 define: &red_min [0, 94, 92]
 define: &red_max [255, 255, 255]
 
-blob_detector:
-  blob_min: *pink_min
-  blob_max: *pink_max
+blob_detect_node:
+  ros__parameters:
+    blob_min: *green_min
+    blob_max: *green_max

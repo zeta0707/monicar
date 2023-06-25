@@ -12,10 +12,12 @@ url: https://github.com/autorope/donkeycar/blob/99c853b1737f12019ae598d3c7f00699
 Listens to /dkcar/control/cmd_vel for corrective actions to the /cmd_vel coming from keyboard or joystick
 
 """
+import time
 import rclpy
 from rclpy.node import Node
+from rclpy.parameter import Parameter
+from rclpy.logging import get_logger
 from geometry_msgs.msg import Twist
-import time
 from .submodules.myutil import clamp, PCA9685, PWMThrottle, PWMThrottle2Wheel, PWMThrottleHat, PWMSteering
 
 class ServoConvert:
@@ -50,30 +52,55 @@ def saturate(value, min, max):
 class DkLowLevelCtrl(Node):
     def __init__(self):       
         
-        super().__init__('low_level_controller')
+        super().__init__('blob_chase_node')
+        self.declare_parameters(
+            namespace='',
+            parameters=[
+                ('has_steer', None),
+                ('isDCSteer', None),
+                ('steer_center', None),
+                ('steer_limit', None),
+                ('speed_center', None),
+                ('speed_limit', None),
+                ('i2cSteer', None),
+                ('i2cThrottle', None),
+           ])  
         self.get_logger().info("Setting Up the Node...")
 
-        self.hasSteer = self.get_parameter('/has_steer') 
-        STEER_CENTER = self.get_parameter("/steer_center") 
-        STEER_LIMIT = self.get_parameter("/steer_limit")
-        SPEED_CENTER = self.get_parameter("/speed_center") 
-        SPEED_LIMIT = self.get_parameter("/speed_limit")   
-        i2caddr0 = self.get_parameter("/i2caddr0") 
-        i2caddr1 = self.get_parameter("/i2caddr1") 
-        self.isDCSteer = self.get_parameter("/isDCSteer") 
+        self.hasSteer = self.get_parameter_or('has_steer').get_parameter_value().integer_value
+        self.isDCSteer = self.get_parameter_or('isDCSteer').get_parameter_value().integer_value  
+        self.STEER_DIR = self.get_parameter_or('steer_dir').get_parameter_value().integer_value
+
+        self.STEER_CENTER = self.get_parameter_or('steer_center').get_parameter_value().integer_value 
+        self.STEER_LIMIT = self.get_parameter_or('steer_limit').get_parameter_value().integer_value
+        self.SPEED_CENTER = self.get_parameter_or('speed_center').get_parameter_value().integer_value 
+        self.SPEED_LIMIT = self.get_parameter_or('speed_limit').get_parameter_value().integer_value
+
+        self.i2cSteer = self.get_parameter_or('i2cSteer').get_parameter_value().integer_value
+        self.i2cThrottle = self.get_parameter_or('i2cThrottle').get_parameter_value().integer_value
+
+        print('hasSteer: %s, i2cSteer: %s, i2cThrottle: %s'%
+            (self.hasSteer,
+            self.i2cSteer,
+            self.i2cThrottle)
+        )       
+
+        # Create a timer that will gate the node actions twice a second
+        timer_period = 0.1  # seconds
+        self.timer = self.create_timer(timer_period, self.node_callback)
 
         #RCcar which has steering
         if self.hasSteer == 1:
             #Steer with DC motor driver 
             if self.isDCSteer == 1:
-                steer_controller = PCA9685(channel=0, address=i2caddr0, busnum=1)
+                steer_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
                 self._steering = PWMSteering(controller=steer_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             #Steer with servo motor
             else:
-                self._steering = PCA9685(channel=0, address=i2caddr0, busnum=1)
+                self._steering = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
             self.get_logger().info("Steering Controller Awaked!!") 
            
-            throttle_controller = PCA9685(channel=0, address=i2caddr1, busnum=1)
+            throttle_controller = PCA9685(channel=0, address=self.i2cThrottle, busnum=1)
             if self.isDCSteer == 1:  
                  #Throttle with Motorhat             
                 self._throttle = PWMThrottleHat(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)            
@@ -84,31 +111,17 @@ class DkLowLevelCtrl(Node):
             
         #2wheel RCcar
         else:
-            throttle_controller = PCA9685(channel=0, address=i2caddr0, busnum=1)
+            throttle_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
             self._throttle = PWMThrottle2Wheel(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             self.get_logger().info("2wheel Throttle Controller Awaked!!")           
 
         self.actuators = {}
-        self.actuators["throttle"] = ServoConvert(id=1, center_value=SPEED_CENTER, range=SPEED_LIMIT*2, direction=1)
-        self.actuators["steering"] = ServoConvert(id=2, center_value=STEER_CENTER, range=STEER_LIMIT*2, direction=1)  # -- positive left
+        self.actuators["throttle"] = ServoConvert(id=1, center_value=self.SPEED_CENTER, range=self.SPEED_LIMIT*2, direction=1)
+        self.actuators["steering"] = ServoConvert(id=2, center_value=self.STEER_CENTER, range=self.STEER_LIMIT*2, direction=1)  # -- positive left
         self.get_logger().info("> Actuators corrrectly initialized")
 
-        # --- Create a debug publisher for resulting cmd_vel
-        #self.ros_pub_debug_command = rclpy.Publisher(
-        #    "/dkcar/debug/cmd_vel", Twist, queue_size=1
-        #)
-        #self.get_logger().info("> Publisher corrrectly initialized")
-
-        # --- Create the Subscriber to Twist commands
-        #self.ros_sub_twist = rclpy.Subscriber(
-        #    "/cmd_vel", Twist, self.update_message_from_command
-        #)
-        #self.get_logger().info("> Subscriber corrrectly initialized")
-
         # --- Create the Subscriber to obstacle_avoidance commands
-        self.ros_sub_twist = rclpy.Subscriber(
-            "/dkcar/control/cmd_vel", Twist, self.update_message_from_chase
-        )
+        self.ros_sub_twist = self.create_subscription(Twist, "/dkcar/control/cmd_vel", self.update_message_from_chase, 10)       
         self.get_logger().info("> Subscriber corrrectly initialized")
 
         self.throttle_cmd = 0.0
@@ -186,26 +199,20 @@ class DkLowLevelCtrl(Node):
     def is_chase_connected(self):
         return time.time() - self._last_time_chase_rcv < self._timeout_blob
 
-    def run(self):
+    def node_callback(self):
 
-        # --- Set the control rate
-        rate = rclpy.Rate(10)
+        self.compose_command_velocity()
+        if not self.is_controller_connected:
+            self.set_actuators_idle()
 
-        while not rclpy.is_shutdown():
-            self.compose_command_velocity()
-
-            if not self.is_controller_connected:
-                self.set_actuators_idle()
-
-            if not self.is_chase_connected:
-                self.reset_avoid()
-
-            rate.sleep()
+        if not self.is_chase_connected:
+            self.reset_avoid()
 
 def main(args=None):
     rclpy.init(args=args)
     dk_llc = DkLowLevelCtrl()
-    dk_llc.run()  
+    rclpy.spin(dk_llc) 
+
     dk_llc.destroy_node()
     rclpy.shutdown()
  
