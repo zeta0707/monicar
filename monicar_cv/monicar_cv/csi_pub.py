@@ -36,22 +36,26 @@ def gstreamer_pipeline(
 class CameraeNode(Node):
     def __init__(self):
 
-        super().__init__('camera_node')
+        super().__init__('csicam_node')
         
         #for csi camera orientation
-        cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
+        self.cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
         self.image_pub = self.create_publisher(Image, 'csi_image', 10)
-
-        bridge = CvBridge()
+        self.bridge = CvBridge()
         
-        try:
-            while rclpy.ok():
-                # Capture frame-by-frame
-                ret, cv_image = cap.read()
-                self.image_pub.publish(bridge.cv2_to_imgmsg(cv_image, "bgr8"))
-        except KeyboardInterrupt:
-            # When everything done, release the capture
-            cap.release()
+        print("Camera Node created")
+        # Create a timer that will gate the node actions twice a second
+        timer_period = 0.05  # seconds
+        self.timer = self.create_timer(timer_period, self.node_callback)
+
+    def node_callback(self):
+        # Capture frame-by-frame
+        ret, cv_image = self.cap.read()
+        if ret == True:           
+            self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
+        else:
+            print("image read fail")
+            self.cap.release()
             cv2.destroyAllWindows()
 
 def main(args=None):

@@ -38,7 +38,9 @@ setup(
     entry_points={
         'console_scripts': [
             'csi_pub = monicar_cv.csi_pub:main',
+            'webcam_pub = monicar_cv.webcam_pub:main',
             'find_ball = monicar_cv.find_ball:main',
+            
         ],
     },
 )
