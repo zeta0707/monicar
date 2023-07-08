@@ -12,27 +12,24 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-  motor_parameter = LaunchConfiguration(
-    'motor_parameter',
+  yolo_track_parameter = LaunchConfiguration(
+    'yolo_track_parameter',
     default=os.path.join(
       get_package_share_directory('monicar_control'),
-      'param/motor.yaml'
+      'param/yolo.yaml'
     )
   )
 
   return LaunchDescription([
     DeclareLaunchArgument(
-      'keyboard_control',
-      default_value=motor_parameter
+      'yolo_track_parameter',
+      default_value=yolo_track_parameter
     ),
 
     Node(
-      package='monicar_control',
-      executable='keyboard_control',
-      name='keyboard_control',
-      output='screen',
-      emulate_tty=True,
-      parameters=[motor_parameter],
+      package='monicar_control',  executable='chase_object_yolo',  name='chase_object_node',
+      output='screen',  emulate_tty=True,
+      parameters=[yolo_track_parameter],
       namespace='',
     )
   ])

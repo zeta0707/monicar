@@ -10,20 +10,16 @@ def generate_launch_description():
     Node(
       package='monicar_cv', executable='csi_pub', name='camera_node', 
     ),
-
-    IncludeLaunchDescription(
-      PythonLaunchDescriptionSource([
-        FindPackageShare("monicar_cv"), '/launch', '/blob_detect.launch.py'])
-    ),
-
-    IncludeLaunchDescription(
-      PythonLaunchDescriptionSource([
-        FindPackageShare("monicar_control"), '/launch', '/chase_the_ball.launch.py'])
-    ), 
     
+    IncludeLaunchDescription(
+      PythonLaunchDescriptionSource([
+        FindPackageShare("monicar_control"), '/launch', '/yolo_chase.launch.py'])
+    ), 
+
     IncludeLaunchDescription(
       PythonLaunchDescriptionSource([
         FindPackageShare("monicar_control"), '/launch', '/blob_chase.launch.py'])
     ), 
+
   ])
 
