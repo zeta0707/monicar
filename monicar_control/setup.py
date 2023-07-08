@@ -42,7 +42,7 @@ setup(
             'joy_control = monicar_control.joy_control:main',
             'motor_control = monicar_control.motor_control:main',
             'chase_object_yolo = monicar_control.chase_object_yolo:main', 
-            'chase_gotstop_yolo = monicar_control.chase_gotstop_yolo:main', 
+            'chase_traffic_yolo = monicar_control.chase_traffic_yolo:main', 
         ],
     },
 )

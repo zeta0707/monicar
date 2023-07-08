@@ -21,8 +21,6 @@ from geometry_msgs.msg import Twist
 from darknet_ros_msgs.msg import BoundingBoxes
 from rclpy.logging import get_logger
 
-PICTURE_SIZE = 416.0
-
 def saturate(value, min, max):
     if value <= min:
         return min
@@ -31,28 +29,25 @@ def saturate(value, min, max):
     else:
         return value
 
-class ChaseObject(Node):
+class TrafficObject(Node):
     def __init__(self):
 
-        super().__init__('chase_object_node')
+        super().__init__('traffic_node')
 
         self.declare_parameters(
             namespace='',
             parameters=[
                 ('k_steer', None),
                 ('k_throttle', None),
-                ('DETECT_CLASS', None),
            ])  
         self.get_logger().info("Setting Up the Node...")
 
         self.K_LAT_DIST_TO_STEER = self.get_parameter_or('k_steer').get_parameter_value().double_value
         self.K_LAT_DIST_TO_THROTTLE = self.get_parameter_or('k_throttle').get_parameter_value().double_value  
-        self.DETECT_CLASS = self.get_parameter_or('DETECT_CLASS').get_parameter_value().string_value
 
-        print('k_steer: %s, k_throttle: %s, DETECT_CLASS: %s'%
+        print('k_steer: %s, k_throttle: %s'%
             (self.K_LAT_DIST_TO_STEER,
-            self.K_LAT_DIST_TO_THROTTLE,
-            self.DETECT_CLASS)
+            self.K_LAT_DIST_TO_THROTTLE)
         )
 
         self.blob_x = 0.0
@@ -82,14 +77,24 @@ class ChaseObject(Node):
         for box in message.bounding_boxes:
             #
             #yolov4-tiny, 416x416
-            if box.class_id == self.DETECT_CLASS:
-                self.blob_x = float((box.xmax + box.xmin)/PICTURE_SIZE/2.0) - 0.5
-                self.blob_y = float((box.ymax + box.ymin)/PICTURE_SIZE/2.0) - 0.5
-                self._time_detected = time.time()
-                self.get_logger().info("object detected: %.2f  %.2f "%(self.blob_x, self.blob_y))
-                #self.get_logger().info(
-                #    "Xmin: {}, Xmax: {} Ymin: {}, Ymax: {} Class: {}".format
-                #    (box.xmin, box.xmax, box.ymin, box.ymax, box.Class) )
+            if box.class_id == "left":
+                self.blob_x = 0.5
+                self.blob_y = 1.0
+            elif box.class_id == "right":
+                self.blob_x = -0.5
+                self.blob_y = 1.0
+            elif box.class_id == "go":    
+                self.blob_x = 0.0
+                self.blob_y = 1.0
+            elif box.class_id == "stop":     
+                self.blob_x = 0.0
+                self.blob_y = 0.0
+
+            self._time_detected = time.time()
+            #self.get_logger().info("object detected: %.2f  %.2f "%(self.blob_x, self.blob_y))
+            self.get_logger().info(
+                    "Xmin: {}, Xmax: {} Ymin: {}, Ymax: {} Class: {}".format
+                    (box.xmin, box.xmax, box.ymin, box.ymax, box.Class) )
             
     def get_control_action(self):
         """
@@ -124,12 +129,13 @@ class ChaseObject(Node):
         # -- publish it
         self.pub_twist.publish(self._message)
 
+
 def main(args=None):
     rclpy.init(args=args) 
-    chase_object = ChaseObject()
-    rclpy.spin(chase_object) 
+    traffic_object = TrafficObject()
+    rclpy.spin(traffic_object) 
 
-    chase_object.destroy_node()
+    traffic_object.destroy_node()
     rclpy.shutdown()
 
 if __name__ == "__main__":
