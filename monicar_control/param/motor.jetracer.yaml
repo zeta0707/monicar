@@ -1,4 +1,4 @@
-motor_control_node:
+/**:
   ros__parameters:
     steer_center : 380
     steer_limit : 100
@@ -11,3 +11,5 @@ motor_control_node:
     i2cThrottle: 96
     k_steer: 2.5
     k_throttle: 0.2
+
+    DETECT_CLASS : "cup"

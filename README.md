@@ -84,7 +84,7 @@ gst-launch-1.0 nvarguscamerasrc sensor_id=0 ! \
 $ roscore
 
 $ rosrun monicar_camera csi_pub.py
-$ rosrun image_view image_view image:=/csi_image
+$ rosrun image_view image_view image:=/image_raw
 ```
 
 ### 2. **monicar_control package**
@@ -181,7 +181,7 @@ Debugging with `image_view`
 
 ```bash
 # Jetson, but PC is better
-rosrun image_view image_view image:=/webcam_image
+rosrun image_view image_view image:=/image_raw
 rosrun image_view image_view image:=/blob/image_mask
 rosrun image_view image_view image:=/blob/image_blob
 ```

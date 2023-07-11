@@ -11,21 +11,21 @@ from launch.substitutions import TextSubstitution
 from launch_ros.actions import Node
 
 def generate_launch_description():
-  chaseball_parameter = LaunchConfiguration(
-    'chaseball_parameter',
+  motor_parameter = LaunchConfiguration(
+    'motor_parameter',
     default=os.path.join(
       get_package_share_directory('monicar_control'),
-      'param/motor.4chase.yaml'
+      'param/motor.yaml'
     )
   )
 
   return LaunchDescription([
-    DeclareLaunchArgument('chaseball_parameter', default_value=chaseball_parameter),
+    DeclareLaunchArgument('motor_parameter', default_value=motor_parameter),
 
     Node(
       package='monicar_control', executable='chase_the_ball', name='chase_ball_node', 
 	    output='screen', emulate_tty=True,
-      parameters=[chaseball_parameter],
+      parameters=[motor_parameter],
     ),
     
   ])

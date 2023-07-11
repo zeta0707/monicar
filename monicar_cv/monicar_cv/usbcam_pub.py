@@ -10,11 +10,20 @@ class CameraeNode(Node):
     def __init__(self):
 
         super().__init__('usbcam_node')
-        self.cap = cv2.VideoCapture(1)
+        self.declare_parameters(
+        namespace='',
+        parameters=[
+            ('camport', None),
+        ])   
+
+        self.camport = self.get_parameter_or('camport').get_parameter_value().integer_value    
+        print('Camera Port: %s'%self.camport)
+
+        self.cap = cv2.VideoCapture(self.camport)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         self.cap.set(cv2.CAP_PROP_FPS, 30)
-        self.image_pub = self.create_publisher(Image, 'webcam_image', 10)
+        self.image_pub = self.create_publisher(Image, 'image_raw', 10)
         self.bridge = CvBridge()
         print("Camera Node created")
 

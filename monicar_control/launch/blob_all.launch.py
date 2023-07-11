@@ -7,8 +7,9 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
   return LaunchDescription([
-    Node(
-      package='monicar_cv', executable='csi_pub', name='camera_node', 
+    IncludeLaunchDescription(
+      PythonLaunchDescriptionSource([
+        FindPackageShare("monicar_cv"), '/launch', '/csicam.launch.py'])
     ),
 
     IncludeLaunchDescription(

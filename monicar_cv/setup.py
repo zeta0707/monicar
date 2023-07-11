@@ -32,13 +32,13 @@ setup(
         'Topic :: Software Development',
     ],
     description=(
-        'Find blob by HSV filter'
+        'Camera node, Find blob by HSV filter'
     ),
     license='Apache License, Version 2.0',
     entry_points={
         'console_scripts': [
             'csi_pub = monicar_cv.csi_pub:main',
-            'webcam_pub = monicar_cv.webcam_pub:main',
+            'usbcam_pub = monicar_cv.usbcam_pub:main',
             'find_ball = monicar_cv.find_ball:main',           
         ],
     },

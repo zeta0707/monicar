@@ -37,19 +37,26 @@ from .submodules.blob_detector import *
 
 class BlobDetector(Node):
 
-    def __init__(self,thr_min, thr_max, blur=15, blob_params=None, detection_window=None) :
+    def __init__(self, blur=15, blob_params=None, detection_window=None) :
         super().__init__('blob_detect_node')
+        self.declare_parameters(
+        namespace='',
+        parameters=[
+            ('blob_min', None),
+            ('blob_max', None),
+        ]) 
 
-        self.set_threshold(thr_min, thr_max)
+        self.thr_min = self.get_parameter_or("blob_min").get_parameter_value().integer_array_value
+        self.thr_max = self.get_parameter_or("blob_max").get_parameter_value().integer_array_value
+
+        print(*self.thr_min, sep = ',')
+        print(*self.thr_max, sep = ',')
+
+        self.set_threshold(tuple(self.thr_min), tuple(self.thr_max))
         self.set_blur(blur)
         self.set_blob_params(blob_params)
         self.detection_window = detection_window        
         self._t0 = time.time()
-
-        blob_min = self.get_parameter_or("blob_min").get_parameter_value().integer_array_value
-        blob_max = self.get_parameter_or("blob_max").get_parameter_value().integer_array_value
-        print("blob min", tuple(blob_min))
-        print("blob max", tuple(blob_max))
 
         print (">> Publishing image to topic image_blob")
         self.image_pub = self.create_publisher(Image, "/blob/image_blob", 10)
@@ -57,8 +64,8 @@ class BlobDetector(Node):
         self.blob_pub = self.create_publisher(Point, "/blob/point_blob", 10)
 
         self.bridge = CvBridge()
-        self.image_sub = self.create_subscription(Image, "/csi_image",self.callback, 10)
-        print ("<< Subscribed to topic /csi_image")
+        self.image_sub = self.create_subscription(Image, "/image_raw",self.callback, 10)
+        print ("<< Subscribed to topic /image_raw")
         self.blob_point = Point()
 
     def set_threshold(self, thr_min, thr_max):
@@ -126,12 +133,6 @@ def main(args=None):
     y_min   = 0.1
     y_max   = 0.9
 
-    pink_min = (135, 41, 95)
-    pink_max = (255, 196, 255)
-
-    green_min = (39, 81, 71)
-    green_max = (75, 255, 255)
-
     detection_window = [x_min, y_min, x_max, y_max]
     
     params = cv2.SimpleBlobDetector_Params()
@@ -159,7 +160,7 @@ def main(args=None):
 
     rclpy.init(args=args) 
   
-    blob = BlobDetector(green_min, green_max, blur, params, detection_window)
+    blob = BlobDetector(blur, params, detection_window)
 
     rclpy.spin(blob)
     blob.destroy_node()

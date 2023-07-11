@@ -11,21 +11,21 @@ from launch.substitutions import TextSubstitution
 from launch_ros.actions import Node
 
 def generate_launch_description():
-  motor_parameter = LaunchConfiguration(
-    'motor_parameter',
+  cv_parameter = LaunchConfiguration(
+    'cv_parameter',
     default=os.path.join(
-      get_package_share_directory('monicar_control'),
-      'param/motor.yaml'
+      get_package_share_directory('monicar_cv'),
+      'param/cvparam.yaml'
     )
   )
 
   return LaunchDescription([
-    DeclareLaunchArgument('motor_parameter', default_value=motor_parameter),
+    DeclareLaunchArgument('cv_parameter', default_value=cv_parameter),
 
     Node(
-      package='monicar_control', executable='blob_chase', name='blob_chase_node', 
-	    output='screen', emulate_tty=True,
-      parameters=[motor_parameter],
+      package='monicar_cv', executable='usbcam_pub', name='usbcam_node',
+      output='screen', emulate_tty=True,
+      parameters=[cv_parameter],
     ),
     
   ])

@@ -11,17 +11,20 @@ from launch.substitutions import TextSubstitution
 from launch_ros.actions import Node
 
 def generate_launch_description():
-  motor_parameter = LaunchConfiguration(
-    'blob_parameter',
+  cv_parameter = LaunchConfiguration(
+    'cv_parameter',
     default=os.path.join(
       get_package_share_directory('monicar_cv'),
-      'param/find_ball.yaml'
+      'param/cvparam.yaml'
     )
   )
+  
   return LaunchDescription([
+    DeclareLaunchArgument('cv_parameter', default_value=cv_parameter),    
     Node(
       package='monicar_cv', executable='find_ball', name='blob_detect_node',
       output='screen', emulate_tty=True,
+      parameters=[cv_parameter],
     ),
     
   ])

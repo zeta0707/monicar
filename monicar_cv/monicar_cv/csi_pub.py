@@ -40,7 +40,7 @@ class CameraeNode(Node):
         
         #for csi camera orientation
         self.cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
-        self.image_pub = self.create_publisher(Image, 'csi_image', 10)
+        self.image_pub = self.create_publisher(Image, 'image_raw', 10)
         self.bridge = CvBridge()
         
         print("Camera Node created")
