@@ -76,7 +76,7 @@ class ChaseBall(Node):
         self.blob_x = message.x
         self.blob_y = message.y
         self._time_detected = time.time()
-        print("Ball detected: %.1f  %.1f "%(self.blob_x, self.blob_y))
+        self.get_logger().info("Ball detected: %.1f  %.1f "%(self.blob_x, self.blob_y))
 
     def get_control_action(self):
         """
@@ -92,11 +92,11 @@ class ChaseBall(Node):
             # --- Apply steering, proportional to how close is the object
             steer_action = self.K_LAT_DIST_TO_STEER * self.blob_x
             steer_action = saturate(steer_action, -1.5, 1.5)
-            print("BlobX %.2f" % self.blob_x)
+            self.get_logger().info("BlobX %.2f" % self.blob_x)
             
             #if object is detected, go forward with defined power
             throttle_action = self.K_LAT_DIST_TO_THROTTLE
-            print("is_detected, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
+            self.get_logger().info("is_detected, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
 
         return (steer_action, throttle_action)
 
@@ -104,7 +104,7 @@ class ChaseBall(Node):
 
         # -- Get the control action
         steer_action, throttle_action = self.get_control_action()
-        #print("Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
+        #self.get_logger().info("Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
 
         # -- update the message
         self._message.linear.x = throttle_action

@@ -21,6 +21,9 @@ from geometry_msgs.msg import Twist
 from darknet_ros_msgs.msg import BoundingBoxes
 from rclpy.logging import get_logger
 
+#global variable for keeping this value to next traffic signal
+throttle_action = 0.0
+
 def saturate(value, min, max):
     if value <= min:
         return min
@@ -78,11 +81,11 @@ class TrafficObject(Node):
             #
             #yolov4-tiny, 416x416
             if box.class_id == "left":
-                self.blob_x = 0.5
-                self.blob_y = 1.0
-            elif box.class_id == "right":
                 self.blob_x = -0.5
-                self.blob_y = 1.0
+                self.blob_y = 0.5
+            elif box.class_id == "right":
+                self.blob_x = 0.5
+                self.blob_y = 0.5
             elif box.class_id == "go":    
                 self.blob_x = 0.0
                 self.blob_y = 1.0
@@ -91,10 +94,10 @@ class TrafficObject(Node):
                 self.blob_y = 0.0
 
             self._time_detected = time.time()
-            #self.get_logger().info("object detected: %.2f  %.2f "%(self.blob_x, self.blob_y))
-            self.get_logger().info(
-                    "Xmin: {}, Xmax: {} Ymin: {}, Ymax: {} Class: {}".format
-                    (box.xmin, box.xmax, box.ymin, box.ymax, box.Class) )
+            self.get_logger().info("object detected: %.2f  %.2f "%(self.blob_x, self.blob_y))
+            #self.get_logger().info(
+            #       "Xmin: {}, Xmax: {} Ymin: {}, Ymax: {} Class: {}".format
+            #        (box.xmin, box.xmax, box.ymin, box.ymax, box.Class) )
             
     def get_control_action(self):
         """
@@ -103,7 +106,7 @@ class TrafficObject(Node):
         throttle will be multiplied by the commanded throttle
         """
         steer_action = 0.0
-        throttle_action = 0.0
+        global throttle_action
 
         if self.is_detected:
             # --- Apply steering, proportional to how close is the object
@@ -112,15 +115,16 @@ class TrafficObject(Node):
             self.get_logger().info("BlobX %.2f" % self.blob_x)
             
             #if object is detected, go forward with defined power
-            throttle_action = self.K_LAT_DIST_TO_THROTTLE
+            throttle_action = self.K_LAT_DIST_TO_THROTTLE * self.blob_y
             self.get_logger().info("is _detected, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))           
 
-        return (steer_action, throttle_action)
+        return (steer_action)
 
     def node_callback(self):
         # -- Get the control action
-        steer_action, throttle_action = self.get_control_action()
-        self.get_logger().info("RUN, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
+        global throttle_action
+        steer_action = self.get_control_action()
+        #self.get_logger().info("RUN, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
 
         # -- update the message
         self._message.linear.x = throttle_action

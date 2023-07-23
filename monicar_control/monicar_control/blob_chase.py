@@ -148,7 +148,7 @@ class DkLowLevelCtrl(Node):
         self._last_time_chase_rcv = time.time()
         self.throttle_chase = message.linear.x
         self.steer_chase = message.angular.z
-        print(self.throttle_chase, self.steer_chase)
+        #print(self.throttle_chase, self.steer_chase)
 
     def compose_command_velocity(self):
         self.throttle = saturate(self.throttle_cmd + self.throttle_chase, -1, 1)

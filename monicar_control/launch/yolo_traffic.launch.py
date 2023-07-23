@@ -26,6 +26,7 @@ def generate_launch_description():
       package='monicar_control', executable='chase_traffic_yolo', name='traffic_node', 
 	    output='screen', emulate_tty=True,
       parameters=[motor_parameter],
-    ),
+      namespace='',
+    )
     
   ])

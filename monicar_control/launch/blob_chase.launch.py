@@ -24,7 +24,8 @@ def generate_launch_description():
 
     Node(
       package='monicar_control', executable='blob_chase', name='blob_chase_node', 
-	    output='screen', emulate_tty=True,
+	    #output='screen', emulate_tty=True,
+      emulate_tty=True,
       parameters=[motor_parameter],
     ),
     
