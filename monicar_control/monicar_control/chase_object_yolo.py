@@ -39,9 +39,9 @@ class ChaseObject(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('k_steer', None),
-                ('k_throttle', None),
-                ('DETECT_CLASS', None),
+                ('k_steer', 2.5),
+                ('k_throttle', 0.2),
+                ('DETECT_CLASS', "cup"),
            ])  
         self.get_logger().info("Setting Up the Node...")
 

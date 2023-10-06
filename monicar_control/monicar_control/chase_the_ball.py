@@ -36,8 +36,8 @@ class ChaseBall(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('k_steer', None),
-                ('k_throttle', None),
+                ('k_steer', 2.5),
+                ('k_throttle', 0.2),
            ])  
         self.get_logger().info("Setting Up the Node...")
 

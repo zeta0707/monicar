@@ -79,8 +79,8 @@ def blob_detect(image,                  #-- The frame (cv standard)
         params = cv2.SimpleBlobDetector_Params()
          
         # Change thresholds
-        params.minThreshold = 0;
-        params.maxThreshold = 100;
+        params.minThreshold = 0
+        params.maxThreshold = 100
          
         # Filter by Area.
         params.filterByArea = True

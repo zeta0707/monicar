@@ -42,8 +42,8 @@ class BlobDetector(Node):
         self.declare_parameters(
         namespace='',
         parameters=[
-            ('blob_min', None),
-            ('blob_max', None),
+            ('blob_min', [39, 81, 71]),
+            ('blob_max',[75, 255, 255]),
         ]) 
 
         self.thr_min = self.get_parameter_or("blob_min").get_parameter_value().integer_array_value

@@ -19,9 +19,9 @@ class TeleopJoyNode(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('max_fwd_m_s', None),
-                ('max_rev_m_s', None),
-                ('max_deg_s', None),
+                ('max_fwd_m_s', 1.0),
+                ('max_rev_m_s', 1.0),
+                ('max_deg_s', 1.0),
             ])
         self.timer_inc = 0
         self.auto_mode = False

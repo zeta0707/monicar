@@ -24,14 +24,14 @@ class VehicleNode(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('has_steer', None),
-                ('isDCSteer', None),
-                ('steer_center', None),
-                ('steer_limit', None),
-                ('speed_center', None),
-                ('speed_limit', None),
-                ('i2cSteer', None),
-                ('i2cThrottle', None),
+                ('has_steer', 1),
+                ('isDCSteer', 0),
+                ('steer_center', 380),
+                ('steer_limit', 100),
+                ('speed_center', 0),
+                ('speed_limit', 4096),
+                ('i2cSteer', 64),
+                ('i2cThrottle', 96),
            ])        
         self.get_logger().info("Setting Up the Node...")
 
