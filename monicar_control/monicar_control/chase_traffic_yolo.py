@@ -5,11 +5,10 @@ Gets the position of the blob and it commands to steer the wheels
 referenced from tizianofiorenzani/ros_tutorials
 url: https://github.com/tizianofiorenzani/ros_tutorials
 
-Subscribes to 
+Subscribes to
     /darknet_ros/bounding_boxes
-    
-Publishes commands to 
-    /dkcar/control/cmd_vel    
+Publishes commands to
+    /dkcar/control/cmd_vel
 
 """
 import math, time
@@ -42,11 +41,11 @@ class TrafficObject(Node):
             parameters=[
                 ('k_steer', 2.5),
                 ('k_throttle', 0.2),
-           ])  
+           ])
         self.get_logger().info("Setting Up the Node...")
 
         self.K_LAT_DIST_TO_STEER = self.get_parameter_or('k_steer').get_parameter_value().double_value
-        self.K_LAT_DIST_TO_THROTTLE = self.get_parameter_or('k_throttle').get_parameter_value().double_value  
+        self.K_LAT_DIST_TO_THROTTLE = self.get_parameter_or('k_throttle').get_parameter_value().double_value
 
         print('k_steer: %s, k_throttle: %s'%
             (self.K_LAT_DIST_TO_STEER,
@@ -57,7 +56,7 @@ class TrafficObject(Node):
         self.blob_y = 0.0
         self._time_detected = 0.0
 
-        self.sub_center = self.create_subscription(BoundingBoxes, "/darknet_ros/bounding_boxes", self.update_object, 10)  
+        self.sub_center = self.create_subscription(BoundingBoxes, "/darknet_ros/bounding_boxes", self.update_object, 10)
         self.get_logger().info("Subscriber set")
 
         self.pub_twist = self.create_publisher(Twist, "/dkcar/control/cmd_vel", 10)
@@ -86,10 +85,10 @@ class TrafficObject(Node):
             elif box.class_id == "right":
                 self.blob_x = 0.5
                 self.blob_y = 0.5
-            elif box.class_id == "go":    
+            elif box.class_id == "go":
                 self.blob_x = 0.0
                 self.blob_y = 1.0
-            elif box.class_id == "stop":     
+            elif box.class_id == "stop":
                 self.blob_x = 0.0
                 self.blob_y = 0.0
 
@@ -98,7 +97,7 @@ class TrafficObject(Node):
             #self.get_logger().info(
             #       "Xmin: {}, Xmax: {} Ymin: {}, Ymax: {} Class: {}".format
             #        (box.xmin, box.xmax, box.ymin, box.ymax, box.Class) )
-            
+
     def get_control_action(self):
         """
         Based on the current ranges, calculate the command
@@ -113,10 +112,10 @@ class TrafficObject(Node):
             steer_action = self.K_LAT_DIST_TO_STEER * self.blob_x
             steer_action = saturate(steer_action, -1.5, 1.5)
             self.get_logger().info("BlobX %.2f" % self.blob_x)
-            
+
             #if object is detected, go forward with defined power
             throttle_action = self.K_LAT_DIST_TO_THROTTLE * self.blob_y
-            self.get_logger().info("is _detected, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))           
+            self.get_logger().info("is _detected, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
 
         return (steer_action)
 
@@ -135,9 +134,9 @@ class TrafficObject(Node):
 
 
 def main(args=None):
-    rclpy.init(args=args) 
+    rclpy.init(args=args)
     traffic_object = TrafficObject()
-    rclpy.spin(traffic_object) 
+    rclpy.spin(traffic_object)
 
     traffic_object.destroy_node()
     rclpy.shutdown()

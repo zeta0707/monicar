@@ -12,4 +12,4 @@
     k_steer: 2.5
     k_throttle: 0.2
 
-    DETECT_CLASS : "cup"    
+    DETECT_CLASS : "cup"

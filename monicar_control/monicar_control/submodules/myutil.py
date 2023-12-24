@@ -15,7 +15,7 @@ class PCA9685:
     """
 
     def __init__(
-           self, channel, address, frequency=60, busnum=None, init_delay=0.1
+           self, channel, address, frequency=60, busnum=None, center=0
     ):
 
         self.default_freq = 60
@@ -35,10 +35,9 @@ class PCA9685:
         self.pwm = Adafruit_PCA9685.PCA9685(address=address)
         self.pwm.set_pwm_freq(frequency)
         self.channel = channel
-        #time.sleep(init_delay)  # "Tamiya TBLE-02" makes a little leap otherwise
 
-        self.pulse = 0
-        self.prev_pulse = 0
+        self.pulse = center
+        self.prev_pulse = center
         self.running = True
 
     def set_pwm(self, pulse):
