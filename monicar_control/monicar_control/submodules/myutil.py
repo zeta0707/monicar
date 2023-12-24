@@ -105,7 +105,7 @@ class PWMSteering:
     def shutdown(self):
         self.run(0) #stop vehicle
 
-class PWMThrottle:
+class PWMThrottleRacer:
     """
     Wrapper over a PWM motor cotnroller to convert -1 to 1 throttle
     values to PWM pulses.

@@ -18,7 +18,7 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.logging import get_logger
 from geometry_msgs.msg import Twist
-from .submodules.myutil import clamp, PCA9685, PWMThrottle, PWMThrottle2Wheel, PWMThrottleHat, PWMSteering
+from .submodules.myutil import clamp, PCA9685, PWMThrottleRacer, PWMThrottle2Wheel, PWMThrottleHat, PWMSteering
 
 class ServoConvert:
     def __init__(self, id=1, center_value=0, range=8192, direction=1):
@@ -101,12 +101,12 @@ class DkLowLevelCtrl(Node):
             self.get_logger().info("Steering Controller Awaked!!")
 
             throttle_controller = PCA9685(channel=0, address=self.i2cThrottle, busnum=1, center=self.SPEED_CENTER)
-            if self.isDCSteer == 1:
-                 #Throttle with Motorhat
-                self._throttle = PWMThrottleHat(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
-            else:
+            if self.i2cThrottle == 0x60:
                 #Throttle with Jetracer
-                self._throttle = PWMThrottle(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
+                self._throttle = PWMThrottleRacer(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
+            else:
+                #Throttle with Motorhat B
+                self._throttle = PWMThrottleHat(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             self.get_logger().info("Throttle Controller Awaked!!")
 
         #2wheel RCcar
