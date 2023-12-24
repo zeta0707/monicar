@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Node for control PCA9685 using teleop_twist_keyboard msg 
+Node for control PCA9685 using teleop_twist_keyboard msg
 referenced from donekycar
 url : https://github.com/autorope/donkeycar/blob/dev/donkeycar/parts/actuator.py
 """
@@ -32,16 +32,16 @@ class VehicleNode(Node):
                 ('speed_limit', 4096),
                 ('i2cSteer', 64),
                 ('i2cThrottle', 96),
-           ])        
+           ])
         self.get_logger().info("Setting Up the Node...")
 
         self.hasSteer = self.get_parameter_or('has_steer').get_parameter_value().integer_value
-        self.isDCSteer = self.get_parameter_or('isDCSteer').get_parameter_value().integer_value  
+        self.isDCSteer = self.get_parameter_or('isDCSteer').get_parameter_value().integer_value
         self.STEER_DIR = self.get_parameter_or('steer_dir').get_parameter_value().integer_value
 
-        self.STEER_CENTER = self.get_parameter_or('steer_center').get_parameter_value().integer_value 
+        self.STEER_CENTER = self.get_parameter_or('steer_center').get_parameter_value().integer_value
         self.STEER_LIMIT = self.get_parameter_or('steer_limit').get_parameter_value().integer_value
-        self.SPEED_CENTER = self.get_parameter_or('speed_center').get_parameter_value().integer_value 
+        self.SPEED_CENTER = self.get_parameter_or('speed_center').get_parameter_value().integer_value
         self.SPEED_LIMIT = self.get_parameter_or('speed_limit').get_parameter_value().integer_value
 
         self.i2cSteer = self.get_parameter_or('i2cSteer').get_parameter_value().integer_value
@@ -55,31 +55,31 @@ class VehicleNode(Node):
 
         #RCcar which has steering
         if self.hasSteer == 1:
-            #Steer with DC motor driver 
+            #Steer with DC motor driver
             if self.isDCSteer == 1:
                 steer_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
                 self._steering = PWMSteering(controller=steer_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             #Steer with servo motor
             else:
                 self._steering = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
-            self.get_logger().info("Steering Controller Awaked!!") 
-            
+            self.get_logger().info("Steering Controller Awaked!!")
+
             throttle_controller = PCA9685(channel=0, address=self.i2cThrottle, busnum=1)
             if self.isDCSteer == 1:
                 #Throttle with Motorhat
-                self._throttle = PWMThrottleHat(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)             
+                self._throttle = PWMThrottleHat(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             else:
                 #Throttle with Jetracer
                 self._throttle = PWMThrottle(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
-            self.get_logger().info("Throttle Controller Awaked!!") 
-            
+            self.get_logger().info("Throttle Controller Awaked!!")
+
         #2wheel RCcar
         else:
             throttle_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=1)
             self._throttle = PWMThrottle2Wheel(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
-            self.get_logger().info("2wheel Throttle Controller Awaked!!")         
+            self.get_logger().info("2wheel Throttle Controller Awaked!!")
 
-        self._teleop_sub = self.create_subscription(Twist, 'cmd_vel', self.cb_teleop, 10)       
+        self._teleop_sub = self.create_subscription(Twist, 'cmd_vel', self.cb_teleop, 10)
         self.get_logger().info("Keyboard Subscriber Awaked!! Waiting for keyboard/joystick...")
 
     def cb_teleop(self, msg):
@@ -90,7 +90,7 @@ class VehicleNode(Node):
         # Do velocity processing here:
         # Use the kinematics of your robot to map linear and angular velocities into motor commands
         # linear.x: 0, 0+step...1.0, step=0.1
-        speed_pulse = self.SPEED_CENTER + msg.linear.x*self.SPEED_LIMIT 
+        speed_pulse = self.SPEED_CENTER + msg.linear.x*self.SPEED_LIMIT
         speed_pulse = clamp(speed_pulse, -self.SPEED_LIMIT+1, self.SPEED_LIMIT-1)
 
         # angular.z: 0, 0+step...1.0, step=0.1
@@ -121,7 +121,7 @@ class VehicleNode(Node):
             self._throttle.run(speed_pulse,steering_pulse)
 
 def main(args=None):
-    rclpy.init(args=args) 
+    rclpy.init(args=args)
     myCar = VehicleNode()
     rclpy.spin(myCar)
     myCar.destroy_node()

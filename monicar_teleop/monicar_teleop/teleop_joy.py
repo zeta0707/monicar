@@ -68,11 +68,13 @@ class TeleopJoyNode(Node):
                 self.headlight_on = False
                 #self.set_headlight_onOff(False)
 
-        self.twist.linear.y = 0.0; 
+        self.twist.linear.y = 0.0
         self.twist.linear.z = 0.0
-        self.twist.angular.x = 0.0; 
-        self.twist.angular.y = 0.0; 
-        self.twist.angular.z = joymsg.axes[0] * self.max_ang_vel
+        self.twist.angular.x = 0.0
+        self.twist.angular.y = 0.0
+
+        # angular velocity
+        self.twist.angular.z = joymsg.axes[2] * self.max_ang_vel
         print('V= %.2f m/s, W= %.2f deg/s'%(self.twist.linear.x, self.twist.angular.z))
 
     def cb_timer(self):
