@@ -1,6 +1,6 @@
 # Monicar I 
 
-## RCCar with ROS Foxy + OpenCV + Yolo4-tiny
+## AI RC Car with ROS2 Galactic + OpenCV + Yolo4-tiny
 
 Base code: https://github.com/Road-Balance/donkey_ros      
 
@@ -14,7 +14,7 @@ Anyway, Here's the link
 **Jetson Nano 4GB or 2GB + IMX219 160 CSI camera**
 * Jetpack 4.5.1
 * Ubuntu 20.24
-* ROS Foxy
+* ROS2 Galactic
 * Opencv3.4.6 downgrade for darknet_ros
 
 ## Packages with Brief Explanation
@@ -34,30 +34,42 @@ Anyway, Here's the link
 Clone these Repo
 
 ```bash
-$ cd ~/catkin_ws/src
+$ cd ~/ros2_ws/src
 
 monicar project code   
 $ git clone https://github.com/zeta0707/monicar.git   
 
 darknet_ros
-git clone --recursive https://github.com/Tossy0423/yolov4-for-darknet_ros.git
-
-Custom Yolo4 train result       
-$ git clone https://github.com/zeta0707/darknet_ros_custom.git
-
+$ git clone --recursive https://github.com/zeta0707/darknet_ros_fp16.git
+$ darknet_ros_fp16/darknet_ros/rm_darknet_CMakeLists.sh
 ```
 
 ## Run script for selecting RCcar type
 ```bash
-Usage: src/monicar/script/jetRccarParam.sh target   
-target: select one among these   
-jetracer, jetbot, motorhat2wheel, motorhatSteer, nuriBldc, 298n2Wheel   
+./jetRccarParam.sh 
+Usage: ./jetRccarParam.sh target
+target: select one among these
+jetracer, jetbot, motorhat2wheel, motorhatSteer, nuriBldc, 298n2Wheel, pca9685Steer 
 ```
 
 if you select waveshare jetracer
 ```bash
 $ cd ~/catkin_ws/src/monicar/script
 $ ./jetRccarParam.sh jetracer
+```
+
+## Run script for selecting Camera type
+```bash
+./camSelect.sh
+Usage: ./camSelect.sh target
+target: select one between these
+csicam, usbcam
+```
+
+if you select usb caemra, run below command.
+```bash
+$ cd ~/ros2_ws/src/monicar/script
+$ ./camSelect.sh usbcam
 ```
 
 ## Usage
@@ -68,7 +80,7 @@ Packages for Image Streaming
 
 > Check Camera Connection First!!!
 
-**Using Gstreamer**
+**Using Gstreamer for CSI camera**
 ```bash
 gst-launch-1.0 nvarguscamerasrc sensor_id=0 ! \
    'video/x-raw(memory:NVMM),width=3280, height=2464, framerate=21/1, format=NV12' ! \
@@ -81,10 +93,13 @@ gst-launch-1.0 nvarguscamerasrc sensor_id=0 ! \
 **Using ROS python**
 
 ```bash
-$ roscore
+#if csi camera
+$ ros2 launch monicar_cv csicam.launch.py
+# if usb camera
+$ ros2 launch monicar_cv usbcam.launch.py
 
-$ rosrun monicar_camera csi_pub.py
-$ rosrun image_view image_view image:=/image_raw
+# terminal #2
+$ ros2 run rqt_image_view rqt_image_view
 ```
 
 ### 2. **monicar_control package**
@@ -97,37 +112,20 @@ There's four modes for controlling RC Car
 * JoyStick Control
 * Keyboard Control
 * Blob, Yolo4 Control
-
-```bash
-$ roscore
-
-$ rosrun monicar_control joy_control.py
-$ rosrun monicar_control keyboard_control.py
-$ rosrun monicar_control blob_chase.py
-```
+* React to traffic signal 
 
 ### 3. **monicar_joy package**
 
-There's two modes for using joystick -- delete Button mode
+There's two modes for using joystick 
+* Button mode- delete Button mode
 
 * Axes mode
-
-```bash
-$ roslaunch monicar_joy joy_teleop_axes.launch
-```
 
 ### 4. **monicar_cv package**
 
 Packages for OpenCV applications
 
 * Find Blob with Certain color
-* Publish Image location as a `geometry_msgs/Point`
-
-```bash
-$ roscore
-
-$ rosrun monicar_cv find_ball.py
-```
 
 ## Application
 
@@ -140,8 +138,10 @@ Control RC Car with game controller
 </p>
 
 ```bash
-# Jetson
-$ roslaunch monicar_joy joy_teleop_axes_jetson.launch
+#jetson
+$ ros2 launch monicar_control motor.launch.py
+#jetson
+$ ros2 launch monicar_teleop teleop_joy.launch.py
 
 ```
 
@@ -154,18 +154,16 @@ Control RC Car with keyboard
 </p>
 
 ```bash
-# Jetson
-$ roslaunch monicar_control teleop_keyboard.launch
-
-# Jetson
-$ roslaunch monicar_teleop monicar_teleop_key.launch
+#jetson
+$ ros2 launch monicar_control motor.launch.py
+#jetson or PC
+$ ros2 run monicar_teleop teleop_keyboard
 
 ```
 
 ### **3. blob_tracking**
 
 Find the any color box of the Jetson Nano on the screen and change the direction of the wheel accordingly.
-
 
 <p align="center">
     <img src="./Images/blob_tracking.gif" width="500" />
@@ -174,16 +172,14 @@ Find the any color box of the Jetson Nano on the screen and change the direction
 
 ```bash
 # Jetson
-$ roslaunch monicar_control blob_control.launch
+$ ros2 launch monicar_control blob_all.launch.py
 ```
 
-Debugging with `image_view`
+Debugging with `rqt_image_view`
 
 ```bash
 # Jetson, but PC is better
-rosrun image_view image_view image:=/image_raw
-rosrun image_view image_view image:=/blob/image_mask
-rosrun image_view image_view image:=/blob/image_blob
+ros2 run rqt_image_view rqt_image_view
 ```
 
 ### **4. Yolo4_tracking**
@@ -199,12 +195,11 @@ Find the object of the Jetson Nano on the screen and change the direction of the
 ```bash
 #terminal #1
 # object detect using Yolo_v4
-zeta@zeta-nano:~/catkin_ws$ roslaunch darknet_ros yolo_v4.launch
+$ ros2 launch darknet_ros yolov4-tiny.launch.py
 
 #terminal #2
 # camera publish, object x/y -> car move
-zeta@zeta-nano:~/catkin_ws$ roslaunch monicar_control yolo_chase.launch
-
+$ ros2 launch monicar_control yolo_all.launch.py 
 ```
 
 ### **5. Yolo4 traffic signal**
@@ -215,9 +210,9 @@ Train traffic signal, then Jetson nano will react to the traffic signal
 ```bash
 #terminal #1
 # object detect using Yolo_v4
-zeta@zeta-nano:~/catkin_ws$ roslaunch darknet_ros yolo_v4_monicar.launch
+$ ros2 launch darknet_ros yolov4-monicar.launch.py
 
 #terminal #2
 # camera publish, object -> start, stop, turn left, turn left
-zeta@zeta-nano:~/catkin_ws$ roslaunch monicar_control yolo_gostop.launch
+$ ros2 launch monicar_control traffic_all.launch.py
 ```

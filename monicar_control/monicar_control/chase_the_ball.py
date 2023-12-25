@@ -11,21 +11,13 @@ Publishes commands to
     /dkcar/control/cmd_vel
 
 """
-import math, time
+import time
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.logging import get_logger
 from geometry_msgs.msg import Twist, Point
-
-def saturate(value, min, max):
-    if value <= min:
-        return min
-    elif value >= max:
-        return max
-    else:
-        return value
-
+from .submodules.myutil import clamp
 
 class ChaseBall(Node):
     def __init__(self):
@@ -90,7 +82,7 @@ class ChaseBall(Node):
         if self.is_detected:
             # --- Apply steering, proportional to how close is the object
             steer_action = self.K_LAT_DIST_TO_STEER * self.blob_x
-            steer_action = saturate(steer_action, -1.5, 1.5)
+            steer_action = clamp(steer_action, -1.5, 1.5)
             self.get_logger().info("BlobX %.2f" % self.blob_x)
 
             #if object is detected, go forward with defined power

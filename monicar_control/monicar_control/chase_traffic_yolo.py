@@ -11,25 +11,17 @@ Publishes commands to
     /dkcar/control/cmd_vel
 
 """
-import math, time
+import time
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.logging import get_logger
 from geometry_msgs.msg import Twist
 from darknet_ros_msgs.msg import BoundingBoxes
-from rclpy.logging import get_logger
+from .submodules.myutil import clamp
 
 #global variable for keeping this value to next traffic signal
-throttle_action = 0.0
-
-def saturate(value, min, max):
-    if value <= min:
-        return min
-    elif value >= max:
-        return max
-    else:
-        return value
+global throttle_action
 
 class TrafficObject(Node):
     def __init__(self):
@@ -66,7 +58,9 @@ class TrafficObject(Node):
 
         self._time_steer = 0
         self._steer_sign_prev = 0
-
+        
+        throttle_action = 0
+        
         # Create a timer that will gate the node actions twice a second
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.node_callback)
@@ -105,12 +99,11 @@ class TrafficObject(Node):
         throttle will be multiplied by the commanded throttle
         """
         steer_action = 0.0
-        global throttle_action
 
         if self.is_detected:
             # --- Apply steering, proportional to how close is the object
             steer_action = self.K_LAT_DIST_TO_STEER * self.blob_x
-            steer_action = saturate(steer_action, -1.5, 1.5)
+            steer_action = clamp(steer_action, -1.5, 1.5)
             self.get_logger().info("BlobX %.2f" % self.blob_x)
 
             #if object is detected, go forward with defined power
@@ -121,7 +114,6 @@ class TrafficObject(Node):
 
     def node_callback(self):
         # -- Get the control action
-        global throttle_action
         steer_action = self.get_control_action()
         #self.get_logger().info("RUN, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
 
@@ -131,7 +123,6 @@ class TrafficObject(Node):
 
         # -- publish it
         self.pub_twist.publish(self._message)
-
 
 def main(args=None):
     rclpy.init(args=args)

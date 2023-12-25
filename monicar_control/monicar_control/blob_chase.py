@@ -39,16 +39,6 @@ class ServoConvert:
         self.value_out = int(self._dir * value_in * self._half_range + self._center)
         return self.value_out
 
-
-def saturate(value, min, max):
-    if value <= min:
-        return min
-    elif value >= max:
-        return max
-    else:
-        return value
-
-
 class DkLowLevelCtrl(Node):
     def __init__(self):
 
@@ -151,9 +141,9 @@ class DkLowLevelCtrl(Node):
         #print(self.throttle_chase, self.steer_chase)
 
     def compose_command_velocity(self):
-        self.throttle = saturate(self.throttle_cmd + self.throttle_chase, -1, 1)
+        self.throttle = clamp(self.throttle_cmd + self.throttle_chase, -1, 1)
         # -- Add steering
-        self.steer = saturate(self.steer_cmd + self.steer_chase, -1, 1)
+        self.steer = clamp(self.steer_cmd + self.steer_chase, -1, 1)
 
         #self._debud_command_msg.linear.x = self.throttle
         #self._debud_command_msg.angular.z = self.steer

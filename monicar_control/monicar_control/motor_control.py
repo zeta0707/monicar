@@ -47,6 +47,9 @@ class VehicleNode(Node):
         self.i2cSteer = self.get_parameter_or('i2cSteer').get_parameter_value().integer_value
         self.i2cThrottle = self.get_parameter_or('i2cThrottle').get_parameter_value().integer_value
 
+        speed_pulse = 0
+        steering_pulse = 0
+        
         print('hasSteer: %s, i2cSteer: %s, i2cThrottle: %s'%
             (self.hasSteer,
             self.i2cSteer,
