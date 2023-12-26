@@ -219,13 +219,13 @@ class PWMThrottle2Wheel:
             + str(right_pulse)
         )
 
-        self.controller.pwm.set_pwm(self.controller.channel+15,0,0)             #BRK for BLDC driver
+        self.controller.pwm.set_pwm(self.controller.channel+15,0,0)                 #BRK for BLDC driver
 
         if left_motor_speed > 0:
             #rear motor
             #1st L298N, Motorhat B
-            self.controller.pwm.set_pwm(self.controller.channel+ 5,0,left_pulse)
-            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 5,0,left_pulse)    #PWM for BLDC driver
+            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,0)             #DIR for BLDC driver
             self.controller.pwm.set_pwm(self.controller.channel+ 3,0,4095)
             #2nd L298N, Jetbot
             self.controller.pwm.set_pwm(self.controller.channel+ 8,0,left_pulse)
@@ -234,9 +234,9 @@ class PWMThrottle2Wheel:
         else:
             #front motor
             #1st L298N, Motorhat B
-            self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-left_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 5,0,-left_pulse)   #PWM for BLDC driver
             self.controller.pwm.set_pwm(self.controller.channel+ 3,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 4,0,4095)          #DIR for BLDC driver
             #2nd L298N, Jetbot
             self.controller.pwm.set_pwm(self.controller.channel+ 8,0,-left_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+ 9,0,0)
@@ -245,9 +245,9 @@ class PWMThrottle2Wheel:
         if right_motor_speed > 0:
             #rear motor
             #1st L298N, MotorHat A
-            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,right_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,right_pulse)   #PWM for BLDC driver
             self.controller.pwm.set_pwm(self.controller.channel+ 1,0,4095)
-            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,0)
+            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,0)             #DIR for BLDC driver
             #2nd L298N, Jetbot
             self.controller.pwm.set_pwm(self.controller.channel+13,0,right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+11,0,0)
@@ -255,9 +255,9 @@ class PWMThrottle2Wheel:
         else:
             #front motor
             #1st L298N, MotorHat A
-            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,-right_pulse)
+            self.controller.pwm.set_pwm(self.controller.channel+ 0,0,-right_pulse)  #PWM for BLDC driver
             self.controller.pwm.set_pwm(self.controller.channel+ 1,0,0)
-            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,4095)
+            self.controller.pwm.set_pwm(self.controller.channel+ 2,0,4095)          #DIR for BLDC driver
             #2nd L298N, Jetbot
             self.controller.pwm.set_pwm(self.controller.channel+13,0,-right_pulse)
             self.controller.pwm.set_pwm(self.controller.channel+11,0,4095)
