@@ -14,6 +14,8 @@ from rclpy.logging import get_logger
 from geometry_msgs.msg import Twist
 from .submodules.myutil import clamp, PCA9685, PWMThrottleRacer, PWMThrottle2Wheel, PWMThrottleHat, PWMSteering
 
+IIC_BUS = 1
+
 global speed_pulse
 global steering_pulse
 
@@ -60,14 +62,14 @@ class VehicleNode(Node):
         if self.hasSteer == 1:
             #Steer with DC motor driver
             if self.isDCSteer == 1:
-                steer_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=1, center=self.STEER_CENTER)
+                steer_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=IIC_BUS, center=self.STEER_CENTER)
                 self._steering = PWMSteering(controller=steer_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             #Steer with servo motor
             else:
-                self._steering = PCA9685(channel=0, address=self.i2cSteer, busnum=1, center=self.STEER_CENTER)
+                self._steering = PCA9685(channel=0, address=self.i2cSteer, busnum=IIC_BUS, center=self.STEER_CENTER)
             self.get_logger().info("Steering Controller Awaked!!")
 
-            throttle_controller = PCA9685(channel=0, address=self.i2cThrottle, busnum=1, center=self.SPEED_CENTER)
+            throttle_controller = PCA9685(channel=0, address=self.i2cThrottle, busnum=IIC_BUS, center=self.SPEED_CENTER)
             if self.i2cThrottle == 0x60:
                 #Throttle with Jetracer
                 self._throttle = PWMThrottleRacer(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
@@ -78,7 +80,7 @@ class VehicleNode(Node):
 
         #2wheel RCcar
         else:
-            throttle_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=1,  center=self.SPEED_CENTER)
+            throttle_controller = PCA9685(channel=0, address=self.i2cSteer, busnum=IIC_BUS,  center=self.SPEED_CENTER)
             self._throttle = PWMThrottle2Wheel(controller=throttle_controller, max_pulse=4095, zero_pulse=0, min_pulse=-4095)
             self.get_logger().info("2wheel Throttle Controller Awaked!!")
 

@@ -46,8 +46,8 @@ $ darknet_ros_fp16/darknet_ros/rm_darknet_CMakeLists.sh
 
 ## Run script for selecting RCcar type
 ```bash
-./jetRccarParam.sh 
-Usage: ./jetRccarParam.sh target
+./carSelect.sh 
+Usage: ./carSelect.sh target
 target: select one among these
 jetracer, jetbot, motorhat2wheel, motorhatSteer, nuriBldc, 298n2Wheel, pca9685Steer 
 ```
@@ -70,6 +70,20 @@ if you select usb caemra, run below command.
 ```bash
 $ cd ~/ros2_ws/src/monicar/script
 $ ./camSelect.sh usbcam
+```
+
+## Run script for selecting Jetson board type
+```bash
+./boardSelect.sh 
+Usage: ./boardSelect.sh target
+target: select one between these
+orin, nano
+```
+
+if you select orin nano, run below command.
+```bash
+$ cd ~/ros2_ws/src/monicar/script
+$ ./boardSelect.sh orin
 ```
 
 ## Usage

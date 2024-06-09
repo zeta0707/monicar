@@ -16,4 +16,4 @@ else
     sed -i 's/usbcam/csicam/g' ../monicar_control/launch/blob_all.launch.py
     sed -i 's/usbcam/csicam/g' ../monicar_control/launch/traffic_all.launch.py
     sed -i 's/usbcam/csicam/g' ../monicar_control/launch/yolo_all.launch.py
-fi    
+fi
