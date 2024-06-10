@@ -13,5 +13,5 @@ if [ "$1" == "orin" ]; then
     sed -i 's/IIC_BUS = .*/IIC_BUS = 7/g' ../monicar_control/monicar_control/blob_chase.py
 else
     sed -i 's/IIC_BUS = .*/IIC_BUS = 1/g' ../monicar_control/monicar_control/motor_control.py
-    sed -i 's/IIC_BUS = .*/IIC_BUS = 7/g' ../monicar_control/monicar_control/blob_chase.py
+    sed -i 's/IIC_BUS = .*/IIC_BUS = 1/g' ../monicar_control/monicar_control/blob_chase.py
 fi
