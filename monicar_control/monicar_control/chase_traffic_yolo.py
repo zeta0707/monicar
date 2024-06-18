@@ -21,7 +21,7 @@ from darknet_ros_msgs.msg import BoundingBoxes
 from .submodules.myutil import clamp
 
 #global variable for keeping this value to next traffic signal
-global throttle_action
+throttle_action = 0.0
 
 class TrafficObject(Node):
     def __init__(self):
@@ -58,8 +58,6 @@ class TrafficObject(Node):
 
         self._time_steer = 0
         self._steer_sign_prev = 0
-        
-        throttle_action = 0
         
         # Create a timer that will gate the node actions twice a second
         timer_period = 0.1  # seconds
@@ -99,7 +97,8 @@ class TrafficObject(Node):
         throttle will be multiplied by the commanded throttle
         """
         steer_action = 0.0
-
+        global throttle_action
+        
         if self.is_detected:
             # --- Apply steering, proportional to how close is the object
             steer_action = self.K_LAT_DIST_TO_STEER * self.blob_x
@@ -114,6 +113,7 @@ class TrafficObject(Node):
 
     def node_callback(self):
         # -- Get the control action
+        global throttle_action
         steer_action = self.get_control_action()
         #self.get_logger().info("RUN, Steering = %3.1f Throttle = %3.1f" % (steer_action, throttle_action))
 
